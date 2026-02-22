@@ -1,0 +1,144 @@
+# =============================================================================
+# PR & Issue Template Compliance Check
+# =============================================================================
+#
+# Ensures that pull requests and issues follow the project's templates.
+# Runs automatically on every PR and comments if required sections are missing.
+#
+# =============================================================================
+
+name: Template Compliance
+
+on:
+  pull_request:
+    types: [opened, edited]
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  # -----------------------------------------------------------------
+  # Check that PRs include the required sections from the PR template
+  # -----------------------------------------------------------------
+  check-pr-template:
+    if: github.event_name == 'pull_request'
+    name: "📋 PR Template Check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR body against template
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+
+            const requiredSections = [
+              { heading: 'What does this PR change?', label: 'Description' },
+              { heading: 'Type of Change', label: 'Type of Change' },
+              { heading: 'Testing Done', label: 'Testing Done' },
+              { heading: 'Checklist', label: 'Checklist' },
+            ];
+
+            const missing = requiredSections.filter(
+              s => !body.toLowerCase().includes(s.heading.toLowerCase())
+            );
+
+            if (missing.length > 0) {
+              const list = missing.map(s => `- **${s.label}**`).join('\n');
+              const message = [
+                '⚠️ **PR Template Check Failed**',
+                '',
+                'Your pull request is missing the following required sections:',
+                '',
+                list,
+                '',
+                'Please update the PR description to follow the [PR template](../PULL_REQUEST_TEMPLATE.md).',
+                '',
+                '_This is an automated check._',
+              ].join('\n');
+
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message,
+              });
+
+              core.setFailed(`Missing PR sections: ${missing.map(s => s.label).join(', ')}`);
+            } else {
+              console.log('✅ All required PR sections present.');
+            }
+
+  # -----------------------------------------------------------------
+  # Check that issues include the required sections from their template
+  # -----------------------------------------------------------------
+  check-issue-template:
+    if: github.event_name == 'issues'
+    name: "📋 Issue Template Check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check issue body against templates
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+            const title = context.payload.issue.title || '';
+            const labels = context.payload.issue.labels.map(l => l.name);
+
+            // Determine which template to check based on title prefix or labels
+            let requiredSections = [];
+            let templateName = '';
+
+            if (title.startsWith('[FALSE POSITIVE]') || labels.includes('false-positive')) {
+              templateName = 'False Positive';
+              requiredSections = [
+                { heading: 'The Finding That Was Flagged', label: 'Finding details' },
+                { heading: 'Why This Is a False Positive', label: 'Justification' },
+                { heading: 'The Actual (Safe) Code Pattern', label: 'Safe code' },
+                { heading: 'Suggested Improvement', label: 'Suggested improvement' },
+              ];
+            } else if (title.startsWith('[BUG]') || labels.includes('bug')) {
+              templateName = 'Bug Report';
+              requiredSections = [
+                { heading: 'Environment', label: 'Environment' },
+                { heading: 'What You Ran', label: 'What you ran' },
+                { heading: 'Expected Behavior', label: 'Expected behavior' },
+                { heading: 'Actual Behavior', label: 'Actual behavior' },
+              ];
+            } else {
+              // Not a templated issue — skip check
+              console.log('ℹ️ Issue does not match a known template prefix. Skipping check.');
+              return;
+            }
+
+            const missing = requiredSections.filter(
+              s => !body.toLowerCase().includes(s.heading.toLowerCase())
+            );
+
+            if (missing.length > 0) {
+              const list = missing.map(s => `- **${s.label}**`).join('\n');
+              const message = [
+                `⚠️ **${templateName} Template Check Failed**`,
+                '',
+                'Your issue is missing the following required sections:',
+                '',
+                list,
+                '',
+                `Please update the issue to follow the [${templateName} template](../ISSUE_TEMPLATE/).`,
+                '',
+                '_This is an automated check._',
+              ].join('\n');
+
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message,
+              });
+
+              core.setFailed(`Missing issue sections: ${missing.map(s => s.label).join(', ')}`);
+            } else {
+              console.log(`✅ All required ${templateName} sections present.`);
+            }

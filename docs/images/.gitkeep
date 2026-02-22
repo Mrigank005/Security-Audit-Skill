@@ -1,0 +1,10 @@
+# This folder is for demo screenshots and diagrams.
+#
+# Suggested images to add after your first scan:
+#   - screenshot-vscode-scan.png    — VS Code running /security-review
+#   - screenshot-cursor-scan.png    — Cursor running /security-review
+#   - screenshot-report-output.png  — Example report output in IDE
+#   - diagram-workflow.png          — Visual flowchart of the 8-step pipeline
+#
+# To add images, place them here and reference from docs or README:
+#   ![Alt text](docs/images/screenshot-vscode-scan.png)

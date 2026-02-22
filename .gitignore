@@ -1,0 +1,86 @@
+# ============================================
+# .gitignore — Security Review Agent Skill
+# ============================================
+
+# ----- Node.js -----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+coverage/
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
+
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+.Python
+*.egg-info/
+.eggs/
+*.egg
+.mypy_cache/
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+
+# ----- PHP -----
+vendor/
+composer.lock
+
+# ----- Environment files -----
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.*.local
+
+# ----- IDE files -----
+.vscode/
+.cursor/
+.windsurf/
+.idea/
+*.swp
+*.swo
+*~
+
+# NOTE: Do NOT ignore .claude/ — that's where the skill lives in user projects
+
+# ----- OS files -----
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ----- Logs -----
+*.log
+logs/
+
+# ----- Temp files -----
+*.tmp
+*.temp
+*.bak
+
+# ============================================
+# DO NOT IGNORE these directories:
+#   skill/        — the skill itself
+#   examples/     — example scan reports
+#   tests/        — test fixtures and expected outputs
+#   docs/         — documentation
+#   .github/      — GitHub templates and workflows
+# ============================================
